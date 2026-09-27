@@ -1,0 +1,1 @@
+timestamp,user_id,location,action,filename,url,to_email,from_email,role,department,province,subject_permission,hour,day,month,weekday,after_hours,weekend,exam_period,records_accessed,days_to_exam,insider_threat,work_email,accessed_subject,allowed_exam_access,handled_exam_paper,unauthorised_exam_access,risk_score,risk_level,iso_prediction,cluster,kmeans_prediction,final_prediction

@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ========================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================= -->
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+
+            <i class="fa-solid fa-gear"></i>
+            System Settings
+
+        </h2>
+
+        <p class="text-muted">
+
+            System information and model status for the SIZOKUTHOLA insider threat detection platform.
+
+        </p>
+
+    </div>
+
+    <div class="row">
+
+        <!-- ========================= -->
+        <!-- SYSTEM INFO -->
+        <!-- ========================= -->
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="fa-solid fa-circle-info"></i>
+                        System Information
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-borderless mb-0">
+
+                        <tr>
+                            <td class="text-muted">System name</td>
+                            <td class="fw-semibold">{{ info.system_name }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Version</td>
+                            <td class="fw-semibold">{{ info.version }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Developer</td>
+                            <td class="fw-semibold">{{ info.developer }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Organisation</td>
+                            <td class="fw-semibold">{{ info.organisation }}</td>
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================= -->
+        <!-- MODEL / DATASET INFO -->
+        <!-- ========================= -->
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="fa-solid fa-robot"></i>
+                        AI Models &amp; Training Data
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-borderless mb-0">
+
+                        <tr>
+                            <td class="text-muted">Anomaly detection model</td>
+                            <td class="fw-semibold">
+                                {{ info.model_one }}
+                                <span class="badge bg-success ms-1">Active</span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Clustering model</td>
+                            <td class="fw-semibold">
+                                {{ info.model_two }}
+                                <span class="badge bg-success ms-1">Active</span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Training dataset</td>
+                            <td class="fw-semibold">{{ info.dataset }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Training records</td>
+                            <td class="fw-semibold">{{ info.records }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-muted">Employees in training data</td>
+                            <td class="fw-semibold">{{ info.employees }}</td>
+                        </tr>
+
+                    </table>
+
+                    <p class="text-muted small mb-0 mt-2">
+
+                        This is the historical dataset the models were trained on. It's separate from
+                        the live activity feeding your dashboards, alerts, and reports.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% if staff_message %}
+    <div class="alert {{ 'alert-success' if staff_added == '1' else 'alert-danger' }} alert-dismissible fade show" role="alert">
+        {{ staff_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <!-- ========================= -->
+    <!-- STAFF ACCOUNTS -->
+    <!-- ========================= -->
+
+    <div class="row">
+
+        <div class="col-lg-7 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-users-gear"></i>
+                        Staff Accounts
+                    </h5>
+                    <span class="badge bg-secondary">{{ all_staff|length }} total</span>
+                </div>
+
+                <div class="table-responsive" style="max-height: 360px;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Username</th>
+                                <th>Display Name</th>
+                                <th>Role</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in all_staff %}
+                            <tr>
+                                <td><strong>{{ s.username }}</strong>{% if s.username == user %} <span class="badge bg-primary">you</span>{% endif %}</td>
+                                <td>{{ s.display_name }}</td>
+                                <td>
+                                    {% if s.role == "Administrator" %}
+                                    <span class="badge bg-dark">Administrator</span>
+                                    {% else %}
+                                    <span class="badge bg-info text-dark">Security Analyst</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if s.username != user %}
+                                    <form method="POST" action="{{ url_for('staff_delete') }}"
+                                          onsubmit="return confirm('Remove staff account {{ s.username }}?');">
+                                        <input type="hidden" name="username" value="{{ s.username }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No staff accounts yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-5 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Add Staff Account
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <form method="POST" action="{{ url_for('staff_add') }}">
+
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Username</label>
+                            <input class="form-control" type="text" name="username" placeholder="e.g. tmokoena" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Display name</label>
+                            <input class="form-control" type="text" name="display_name" placeholder="e.g. Thandiwe Mokoena" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Password</label>
+                            <input class="form-control" type="text" name="password" placeholder="Set a login password" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Role</label>
+                            <select class="form-select" name="role" required>
+                                {% for r in staff_role_options %}
+                                <option value="{{ r }}">{{ r }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa-solid fa-plus"></i> Create Account
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- AUDIT LOG -->
+    <!-- ========================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Staff Activity Log
+            </h5>
+        </div>
+
+        <div class="table-responsive" style="max-height: 320px;">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>When</th>
+                        <th>Who</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in staff_audit_log %}
+                    <tr>
+                        <td class="small">{{ a.performed_at }}</td>
+                        <td><strong>{{ a.username }}</strong></td>
+                        <td class="small">{{ a.role }}</td>
+                        <td>{{ a.action }}</td>
+                        <td class="small text-muted">{{ a.target }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No staff actions recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- ACCOUNT -->
+    <!-- ========================= -->
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                <i class="fa-solid fa-user-shield"></i>
+                Your Account
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-borderless mb-0">
+
+                <tr>
+                    <td class="text-muted" style="width: 220px;">Logged in as</td>
+                    <td class="fw-semibold">{{ user }}</td>
+                </tr>
+
+                <tr>
+                    <td class="text-muted">Role</td>
+                    <td class="fw-semibold">{{ role }}</td>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+  :root{
+    --db-bg: #FFF5F8;
+    --db-panel: #FCE0E8;
+    --db-border: #F0BCCB;
+    --db-text: #4A2C35;
+    --db-muted: #9B7A83;
+    --db-accent: #D4849B;
+    --db-critical: #C2185B;
+    --db-high: #C77D3A;
+    --db-elevated: #B57EA8;
+    --db-normal: #7FA88A;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
+
+  .db-wrap{ font-family:'Inter', sans-serif; color: var(--db-text); }
+  .db-wrap h1, .db-wrap h2, .db-wrap h4, .db-wrap h5, .db-wrap h6{ font-family:'Space Grotesk', sans-serif; }
+  .db-mono{ font-family:'JetBrains Mono', monospace; }
+
+  .db-header{
+    display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;
+    margin-bottom:22px;
+  }
+  .db-header h1{ font-size:1.6rem; font-weight:700; margin:0 0 4px; }
+  .db-header p{ color: var(--db-muted); margin:0; font-size:.92rem; }
+  .db-timestamp{ color: var(--db-muted); font-size:.82rem; text-align:right; }
+
+  /* ---------- live session verdict ---------- */
+  .verdict-card{
+    background: var(--db-panel); border:1px solid var(--db-border); border-radius:16px;
+    padding:24px 26px; margin-bottom:22px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+    border-left:4px solid var(--verdict-color, var(--db-muted));
+  }
+  .verdict-left{ display:flex; align-items:center; gap:18px; }
+  .verdict-icon{
+    width:52px; height:52px; border-radius:50%; flex:none;
+    display:flex; align-items:center; justify-content:center; font-size:1.3rem;
+    background: #F7D0DC; color: var(--db-muted);
+  }
+  .verdict-icon.icon-critical{ background: rgba(194,24,91,.12); color: var(--db-critical); }
+  .verdict-icon.icon-high{ background: rgba(199,125,58,.12); color: var(--db-high); }
+  .verdict-icon.icon-elevated{ background: rgba(181,126,168,.12); color: var(--db-elevated); }
+  .verdict-icon.icon-normal{ background: rgba(127,168,138,.12); color: var(--db-normal); }
+  .verdict-eyebrow{ color: var(--db-muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin-bottom:3px; }
+  .verdict-level{ font-size:1.5rem; font-weight:700; color: var(--verdict-color, var(--db-text)); }
+  .verdict-detail{ color: var(--db-muted); font-size:.85rem; margin-top:2px; }
+  .verdict-breakdown{ display:flex; gap:18px; }
+  .verdict-stat{ text-align:center; }
+  .verdict-stat .n{ font-family:'JetBrains Mono', monospace; font-weight:600; font-size:1.15rem; }
+  .verdict-stat .l{ color: var(--db-muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; }
+
+  /* ---------- db note ---------- */
+  .db-note{
+    background: #fafbfe; border:1px solid var(--db-border); border-radius:10px;
+    padding:10px 14px; font-size:.8rem; color: var(--db-muted); margin-bottom:22px;
+    display:flex; gap:8px; align-items:flex-start;
+  }
+  .db-note code{ background:#eef0f6; padding:1px 5px; border-radius:4px; color: var(--db-accent); }
+
+  /* ---------- kpi cards ---------- */
+  .kpi-row{ display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-bottom:22px; }
+  @media (max-width: 1100px){ .kpi-row{ grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 650px){ .kpi-row{ grid-template-columns: repeat(2, 1fr); } }
+  .kpi-card{
+    background: var(--db-panel); border:1px solid var(--db-border); border-radius:12px;
+    padding:15px 16px; border-left:3px solid var(--kpi-color, var(--db-border));
+  }
+  .kpi-card .n{ font-family:'JetBrains Mono', monospace; font-size:1.5rem; font-weight:600; line-height:1.1; }
+  .kpi-card .l{ color: var(--db-muted); font-size:.76rem; margin-top:4px; }
+
+  .beacon-card{ display:flex; align-items:center; border-left:3px solid var(--db-normal); }
+  .beacon-card.beacon-active{ border-left-color: var(--db-critical); }
+  .beacon-row{ display:flex; align-items:center; gap:12px; }
+  .beacon-dot{
+    width:14px; height:14px; border-radius:50%; flex:none;
+    background: var(--db-normal); box-shadow: 0 0 0 0 rgba(127,168,138,.5);
+  }
+  .beacon-dot.on{
+    background: var(--db-critical);
+    animation: beacon-pulse 1.3s ease-in-out infinite;
+  }
+  @keyframes beacon-pulse{
+    0%   { box-shadow: 0 0 0 0 rgba(194,24,91,.55); }
+    70%  { box-shadow: 0 0 0 10px rgba(194,24,91,0); }
+    100% { box-shadow: 0 0 0 0 rgba(194,24,91,0); }
+  }
+
+  /* ---------- panels ---------- */
+  .db-panel{
+    background: var(--db-panel); border:1px solid var(--db-border); border-radius:14px;
+    padding:18px 20px; height:100%;
+  }
+  .db-panel-head{ font-weight:700; font-size:.95rem; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+
+  /* ---------- tables ---------- */
+  .db-table{ width:100%; font-size:.86rem; }
+  .db-table th{ color: var(--db-muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; padding-bottom:8px; border-bottom:1px solid var(--db-border); }
+  .db-table td{ padding:9px 6px; border-bottom:1px solid var(--db-border); vertical-align:middle; }
+  .db-table tr:last-child td{ border-bottom:none; }
+  .live-pill{ background: rgba(181,126,168,.1); color: var(--db-elevated); border:1px solid rgba(181,126,168,.3); padding:1px 7px; border-radius:999px; font-size:.68rem; font-weight:600; }
+  .lvl-pill{ padding:2px 9px; border-radius:999px; font-size:.74rem; font-weight:600; }
+  .lvl-critical{ background: rgba(194,24,91,.1); color: var(--db-critical); }
+  .lvl-high{ background: rgba(199,125,58,.1); color: var(--db-high); }
+  .lvl-medium{ background: rgba(181,126,168,.1); color: var(--db-elevated); }
+  .lvl-low{ background: rgba(127,168,138,.1); color: var(--db-normal); }
+</style>
+
+<div class="container-fluid db-wrap">
+
+    <!-- ========================= -->
+    <!-- HEADER -->
+    <!-- ========================= -->
+
+    <div class="db-header">
+        <div>
+            <h1>Security Dashboard</h1>
+            <p>Department of Basic Education &middot; AI-Powered Insider Threat Detection System</p>
+        </div>
+        <div class="db-timestamp">{{ current_time }}</div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- LIVE SESSION VERDICT -->
+    <!-- ========================= -->
+
+    {% set verdict_colors = {"CRITICAL":"var(--db-critical)", "HIGH":"var(--db-high)", "ELEVATED":"var(--db-elevated)", "NORMAL":"var(--db-normal)", "IDLE":"var(--db-muted)"} %}
+    {% set verdict_icons = {"CRITICAL":"fa-triangle-exclamation", "HIGH":"fa-radiation", "ELEVATED":"fa-circle-info", "NORMAL":"fa-circle-check", "IDLE":"fa-moon"} %}
+
+    {% set verdict_icon_class = {"CRITICAL":"icon-critical", "HIGH":"icon-high", "ELEVATED":"icon-elevated", "NORMAL":"icon-normal", "IDLE":""} %}
+
+    <div class="verdict-card" style="--verdict-color: {{ verdict_colors.get(live_session.level, 'var(--db-muted)') }};">
+
+        <div class="verdict-left">
+            <div class="verdict-icon {{ verdict_icon_class.get(live_session.level, '') }}">
+                <i class="fa-solid {{ verdict_icons.get(live_session.level, 'fa-circle') }}"></i>
+            </div>
+            <div>
+                <div class="verdict-eyebrow">This live session</div>
+                <div class="verdict-level">
+                    {% if live_session.level == "IDLE" %}No activity yet
+                    {% elif live_session.level == "NORMAL" %}Normal
+                    {% elif live_session.level == "ELEVATED" %}Elevated
+                    {% elif live_session.level == "HIGH" %}High alert
+                    {% else %}Critical alert{% endif %}
+                </div>
+                {% if live_session.last_action %}
+                <div class="verdict-detail">
+                    Last: {{ live_session.last_action.user_id }} &middot; {{ live_session.last_action.action }}
+                    &middot; scored {{ live_session.last_action.threat_level }}
+                </div>
+                {% else %}
+                <div class="verdict-detail">Waiting for the first employee login of this session.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="verdict-breakdown">
+            <div class="verdict-stat"><div class="n" style="color:var(--db-critical);">{{ live_session.critical }}</div><div class="l">Critical</div></div>
+            <div class="verdict-stat"><div class="n" style="color:var(--db-high);">{{ live_session.high }}</div><div class="l">High</div></div>
+            <div class="verdict-stat"><div class="n" style="color:var(--db-elevated);">{{ live_session.medium }}</div><div class="l">Medium</div></div>
+            <div class="verdict-stat"><div class="n" style="color:var(--db-normal);">{{ live_session.low }}</div><div class="l">Low</div></div>
+            <div class="verdict-stat"><div class="n">{{ live_session.total }}</div><div class="l">Total live</div></div>
+        </div>
+
+    </div>
+
+    <div class="db-note">
+        <i class="fa-solid fa-database mt-1"></i>
+        <div>
+            Every live action above is written to the <code>activity_log</code> table in
+            <code>data/verifications.db</code> the moment it happens -- the same SQLite database as the
+            alert verification log. Open it in your SQLite viewer in VS Code to see the raw record for
+            any employee, or click their name anywhere in this app for the same view built in.
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- KPI CARDS -->
+    <!-- ========================= -->
+
+    <div class="kpi-row">
+
+        <div class="kpi-card" style="--kpi-color:var(--db-accent);">
+            <div class="n">{{ employees }}</div>
+            <div class="l">Employees</div>
+        </div>
+
+        <div class="kpi-card" style="--kpi-color:#9B7A83;">
+            <div class="n">{{ records }}</div>
+            <div class="l">Total Records</div>
+        </div>
+
+        <div class="kpi-card" style="--kpi-color:var(--db-normal);">
+            <div class="n">{{ alerts }}</div>
+            <div class="l">Total Alerts</div>
+        </div>
+
+        <div class="kpi-card beacon-card {{ 'beacon-active' if (high + critical) > 0 else '' }}" style="grid-column: span 2;">
+            <div class="beacon-row">
+                <span class="beacon-dot {{ 'on' if (high + critical) > 0 else '' }}"></span>
+                <div>
+                    <div class="n" style="color:{{ 'var(--db-critical)' if (high+critical) > 0 else 'var(--db-normal)' }};">{{ high + critical }}</div>
+                    <div class="l">
+                        {% if (high + critical) > 0 %}
+                        Alerts need attention ({{ critical }} Critical, {{ high }} High)
+                        {% else %}
+                        No High or Critical alerts right now
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kpi-card" style="--kpi-color:var(--db-elevated);">
+            <div class="n">{{ live_records }}</div>
+            <div class="l">Live This Session</div>
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- CHARTS -->
+    <!-- ========================= -->
+
+    <div class="row mb-3">
+
+        <div class="col-lg-4 mb-3">
+            <div class="db-panel">
+                <div class="db-panel-head"><i class="fa-solid fa-chart-pie" style="color:var(--db-accent);"></i> Threat Level Distribution</div>
+                <canvas id="threatChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            <div class="db-panel">
+                <div class="db-panel-head"><i class="fa-solid fa-map" style="color:var(--db-accent);"></i> Threats by Province</div>
+                <canvas id="provinceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-3">
+            <div class="db-panel">
+                <div class="db-panel-head"><i class="fa-solid fa-building" style="color:var(--db-accent);"></i> Threats by Department</div>
+                <canvas id="departmentChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- TOP EMPLOYEES / RECENT ALERTS -->
+    <!-- ========================= -->
+
+    <div class="row">
+
+        <div class="col-lg-6 mb-3">
+            <div class="db-panel">
+                <div class="db-panel-head"><i class="fa-solid fa-ranking-star" style="color:var(--db-accent);"></i> Top Behaviour Scores</div>
+
+                <table class="db-table">
+                    <thead>
+                        <tr><th></th><th>User</th><th>Role</th><th>Score</th><th>Threat</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in top_employees %}
+                        <tr>
+                            <td>{% if emp.source == "Live" %}<span class="live-pill">LIVE</span>{% endif %}</td>
+                            <td><a href="{{ url_for('employee_detail', user_id=emp.user_id) }}" style="color:var(--db-text); font-weight:600;">{{ emp.user_id }}</a></td>
+                            <td class="text-muted">{{ emp.role }}</td>
+                            <td class="db-mono">{{ emp.behaviour_score }}</td>
+                            <td>
+                                <span class="lvl-pill lvl-{{ emp.threat_level|lower }}">{{ emp.threat_level }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">No activity yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+            <div class="db-panel">
+                <div class="db-panel-head"><i class="fa-solid fa-bell" style="color:var(--db-accent);"></i> Recent Alerts</div>
+
+                <table class="db-table">
+                    <thead>
+                        <tr><th></th><th>User</th><th>Action</th><th>Threat</th><th>Recommendation</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for row in recent_alerts %}
+                        <tr>
+                            <td>{% if row.source == "Live" %}<span class="live-pill">LIVE</span>{% endif %}</td>
+                            <td><a href="{{ url_for('employee_detail', user_id=row.user_id) }}" style="color:var(--db-text); font-weight:600;">{{ row.user_id }}</a></td>
+                            <td class="text-muted">{{ row.action }}</td>
+                            <td><span class="lvl-pill lvl-{{ row.threat_level|lower }}">{{ row.threat_level }}</span></td>
+                            <td class="text-muted small">{{ row.recommendation }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">No alerts yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = "#9B7A83";
+
+new Chart(
+document.getElementById("threatChart"),
+{
+type:"doughnut",
+data:{
+labels:{{ threat_labels|safe }},
+datasets:[{
+data:{{ threat_values|safe }},
+backgroundColor:["#7FA88A","#B57EA8","#C77D3A","#C2185B"],
+borderWidth:0
+}]
+},
+options:{ plugins:{ legend:{ position:"bottom", labels:{ boxWidth:10, padding:12 } } } }
+}
+);
+
+new Chart(
+document.getElementById("provinceChart"),
+{
+type:"bar",
+data:{
+labels:{{ province_labels|safe }},
+datasets:[{
+label:"Threats",
+data:{{ province_values|safe }},
+backgroundColor:"#D4849B",
+borderRadius:4
+}]
+},
+options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ grid:{ color:"#F5D7DF" } }, x:{ grid:{ display:false } } } }
+}
+);
+
+new Chart(
+document.getElementById("departmentChart"),
+{
+type:"bar",
+data:{
+labels:{{ department_labels|safe }},
+datasets:[{
+label:"Threats",
+data:{{ department_values|safe }},
+backgroundColor:"#C2185B",
+borderRadius:4
+}]
+},
+options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ grid:{ color:"#F5D7DF" } }, x:{ grid:{ display:false } } } }
+}
+);
+
+</script>
+
+{% endblock %}

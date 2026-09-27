@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+
+            Security Analytics
+
+        </h2>
+
+        <p class="text-muted">
+
+            Visual analysis of insider threat activities across the Department of Basic Education.
+
+        </p>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    Threat Level Distribution
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="threatChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    Threats by Province
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="provinceChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="row">
+
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    Threats by Department
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="departmentChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    Threats by Employee Role
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="roleChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+new Chart(
+document.getElementById("threatChart"),
+{
+type:"doughnut",
+data:{
+labels:{{ threat_labels|safe }},
+datasets:[{
+data:{{ threat_values|safe }}
+}]
+}
+}
+);
+
+new Chart(
+document.getElementById("provinceChart"),
+{
+type:"bar",
+data:{
+labels:{{ province_labels|safe }},
+datasets:[{
+label:"Threats",
+data:{{ province_values|safe }}
+}]
+}
+}
+);
+
+new Chart(
+document.getElementById("departmentChart"),
+{
+type:"bar",
+data:{
+labels:{{ department_labels|safe }},
+datasets:[{
+label:"Threats",
+data:{{ department_values|safe }}
+}]
+}
+}
+);
+
+new Chart(
+document.getElementById("roleChart"),
+{
+type:"pie",
+data:{
+labels:{{ role_labels|safe }},
+datasets:[{
+data:{{ role_values|safe }}
+}]
+}
+}
+);
+
+</script>
+
+{% endblock %}

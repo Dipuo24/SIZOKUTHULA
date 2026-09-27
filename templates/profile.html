@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">
+            <i class="fa-solid fa-circle-user"></i>
+            My Profile
+        </h2>
+        <p class="text-muted">Your account details on the SIZOKUTHOLA system.</p>
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-id-card"></i> Account Details</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted" style="width: 220px;">Username</td>
+                            <td class="fw-semibold">{{ profile.username }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Role</td>
+                            <td>
+                                {% if profile.role == "Administrator" %}
+                                <span class="badge bg-dark">Administrator</span>
+                                {% elif profile.role == "Security Analyst" %}
+                                <span class="badge bg-info text-dark">Security Analyst</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ profile.role }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Organisation</td>
+                            <td class="fw-semibold">{{ profile.organisation }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">System</td>
+                            <td class="fw-semibold">{{ profile.system }}</td>
+                        </tr>
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-5">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-shield-halved"></i> What You Can Do</h5>
+                </div>
+
+                <div class="card-body">
+
+                    {% if profile.role == "Administrator" %}
+                    <p class="mb-2"><i class="fa-solid fa-circle-check text-success"></i> View the full security dashboard and analytics</p>
+                    <p class="mb-2"><i class="fa-solid fa-circle-check text-success"></i> Add and remove employee accounts</p>
+                    <p class="mb-2"><i class="fa-solid fa-circle-check text-success"></i> Add and remove staff accounts</p>
+                    <p class="mb-0"><i class="fa-solid fa-circle-xmark text-danger"></i> Verify security alerts &mdash; that is a Security Analyst task</p>
+                    {% elif profile.role == "Security Analyst" %}
+                    <p class="mb-2"><i class="fa-solid fa-circle-check text-success"></i> Review the security alerts dashboard</p>
+                    <p class="mb-2"><i class="fa-solid fa-circle-check text-success"></i> Verify and sign off on flagged alerts</p>
+                    <p class="mb-2"><i class="fa-solid fa-circle-check text-success"></i> View an employee's full activity record</p>
+                    <p class="mb-0"><i class="fa-solid fa-circle-xmark text-danger"></i> Manage employee or staff accounts</p>
+                    {% else %}
+                    <p class="mb-0 text-muted">Your permissions are based on your assigned role.</p>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

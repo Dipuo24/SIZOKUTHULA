@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+
+            Security Reports
+
+        </h2>
+
+        <p class="text-muted">
+
+            Generate and download insider threat reports.
+
+        </p>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm dashboard-card bg-primary">
+
+                <div class="card-body">
+
+                    <h6>Total Employees</h6>
+
+                    <h2>{{ report.total_employees }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm dashboard-card bg-success">
+
+                <div class="card-body">
+
+                    <h6>Total Alerts</h6>
+
+                    <h2>{{ report.total_alerts }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm dashboard-card bg-warning text-dark">
+
+                <div class="card-body">
+
+                    <h6>High Risk</h6>
+
+                    <h2>{{ report.high }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow-sm dashboard-card bg-danger">
+
+                <div class="card-body">
+
+                    <h6>Critical</h6>
+
+                    <h2>{{ report.critical }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+
+            Download Reports
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Report</th>
+
+                        <th>Description</th>
+
+                        <th>Download</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>Province Risk Report</td>
+
+                        <td>Threat summary by province.</td>
+
+                        <td>
+
+                            <a href="/download/province"
+
+                               class="btn btn-primary">
+
+                                Download
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>Department Risk Report</td>
+
+                        <td>Threat summary by department.</td>
+
+                        <td>
+
+                            <a href="/download/department"
+
+                               class="btn btn-success">
+
+                                Download
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>Security Alerts</td>
+
+                        <td>Current insider threat alerts.</td>
+
+                        <td>
+
+                            <a href="/download/alerts"
+
+                               class="btn btn-danger">
+
+                                Download
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>Complete Dataset</td>
+
+                        <td>SIZOKUTHOLA Final Dataset.</td>
+
+                        <td>
+
+                            <a href="/download/final"
+
+                               class="btn btn-dark">
+
+                                Download
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

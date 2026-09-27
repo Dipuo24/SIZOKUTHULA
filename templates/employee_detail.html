@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ========================= -->
+    <!-- HEADER -->
+    <!-- ========================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <div class="row align-items-center">
+
+                <div class="col-lg-8">
+
+                    <a href="{{ url_for('employees') }}" class="text-muted small">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Employees
+                    </a>
+
+                    <h2 class="fw-bold text-primary mt-2">
+                        <i class="fa-solid fa-user-shield"></i>
+                        {{ employee.user_id }}
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        {{ employee.role }} &middot; {{ employee.department }} &middot; {{ employee.province }}
+                    </p>
+
+                </div>
+
+                <div class="col-lg-4 text-end">
+
+                    {% if stats.highest_threat == "Critical" %}
+                    <span class="badge bg-danger fs-6">Highest seen: Critical</span>
+                    {% elif stats.highest_threat == "High" %}
+                    <span class="badge bg-warning text-dark fs-6">Highest seen: High</span>
+                    {% elif stats.highest_threat == "Medium" %}
+                    <span class="badge bg-info fs-6">Highest seen: Medium</span>
+                    {% else %}
+                    <span class="badge bg-success fs-6">Highest seen: Low</span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- STAT CARDS -->
+    <!-- ========================= -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-3 mb-3">
+            <div class="card employee-card h-100">
+                <div class="card-body">
+                    <h6>Total Actions Logged</h6>
+                    <h2>{{ stats.total_actions }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card employee-card h-100">
+                <div class="card-body">
+                    <h6>Average Behaviour Score</h6>
+                    <h2>{{ stats.avg_behaviour }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card employee-card h-100">
+                <div class="card-body">
+                    <h6>Live Events This Session</h6>
+                    <h2>{{ stats.live_count }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card employee-card h-100">
+                <div class="card-body">
+                    <h6>Unauthorised Subject Access</h6>
+                    <h2 class="{{ 'text-danger' if stats.unauthorised_count > 0 else '' }}">{{ stats.unauthorised_count }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <!-- ========================= -->
+        <!-- PROFILE + JOB + TASKS -->
+        <!-- ========================= -->
+
+        <div class="col-lg-4 mb-4">
+
+            <div class="card shadow-sm border-0 mb-4">
+
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-id-card"></i> Employee Details</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-borderless mb-0">
+                        <tr><td class="text-muted">User ID</td><td class="fw-semibold">{{ employee.user_id }}</td></tr>
+                        <tr><td class="text-muted">Role</td><td class="fw-semibold">{{ employee.role }}</td></tr>
+                        <tr><td class="text-muted">Department</td><td class="fw-semibold">{{ employee.department }}</td></tr>
+                        <tr><td class="text-muted">Province</td><td class="fw-semibold">{{ employee.province }}</td></tr>
+                        <tr><td class="text-muted">Subject</td><td class="fw-semibold">{{ employee.subject_permission }}</td></tr>
+                        <tr><td class="text-muted">Work email</td><td class="fw-semibold">{{ employee.work_email }}</td></tr>
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-briefcase"></i> What's their job?</h5>
+                </div>
+
+                <div class="card-body">
+                    <p class="fw-semibold">{{ guidance.summary }}</p>
+                    <p class="mb-1"><i class="fa-solid fa-circle-check text-success"></i> <strong>May:</strong> {{ guidance.may }}</p>
+                    <p class="mb-0"><i class="fa-solid fa-circle-xmark text-danger"></i> <strong>May not:</strong> {{ guidance.may_not }}</p>
+                </div>
+
+            </div>
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-list-check"></i> Today's Tasks</h5>
+                </div>
+
+                <div class="card-body">
+                    {% for t in daily_tasks %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        {% if t.done %}
+                        <span class="badge bg-success"><i class="fa-solid fa-check"></i></span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ t.id }}</span>
+                        {% endif %}
+                        <span class="{{ 'text-muted text-decoration-line-through' if t.done else '' }}">{{ t.description }}</span>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No tasks assigned today.</p>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================= -->
+        <!-- FULL ACTIVITY HISTORY -->
+        <!-- ========================= -->
+
+        <div class="col-lg-8 mb-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fa-solid fa-clock-rotate-left"></i> Full Activity History</h5>
+                    <span class="badge bg-secondary">showing {{ activity_history|length }} of {{ total_activity_count }}</span>
+                </div>
+
+                <div class="table-responsive" style="max-height: 720px;">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light" style="position: sticky; top: 0;">
+                            <tr>
+                                <th></th>
+                                <th>When</th>
+                                <th>Action</th>
+                                <th>File / Detail</th>
+                                <th>Subject</th>
+                                <th>Score</th>
+                                <th>Threat</th>
+                                <th>Recommendation</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in activity_history %}
+                            <tr>
+                                <td>
+                                    {% if row.source == "Live" %}
+                                    <span class="badge bg-primary">LIVE</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ row.timestamp[:16].replace('T',' ') }}</td>
+                                <td>
+                                    {{ row.action }}
+                                    {% if row.accessed_subject and row.accessed_subject != employee.subject_permission %}
+                                    <i class="fa-solid fa-triangle-exclamation text-danger" title="Outside assigned subject"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-muted">{{ row.filename or '—' }}</td>
+                                <td>{{ row.accessed_subject or '—' }}</td>
+                                <td>{{ row.behaviour_score }}</td>
+                                <td>
+                                    {% if row.threat_level == "Critical" %}
+                                    <span class="badge bg-danger">Critical</span>
+                                    {% elif row.threat_level == "High" %}
+                                    <span class="badge bg-warning text-dark">High</span>
+                                    {% elif row.threat_level == "Medium" %}
+                                    <span class="badge bg-info">Medium</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Low</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ row.recommendation }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">No activity on record for this employee.</td>
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+  :root{
+    --emp-bg: #FFF5F8;
+    --emp-panel: #FCE0E8;
+    --emp-border: #F0BCCB;
+    --emp-text: #4A2C35;
+    --emp-muted: #9B7A83;
+    --emp-accent: #D4849B;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+  .emp-wrap{ font-family:'Inter', sans-serif; color: var(--emp-text); }
+  .emp-wrap h1, .emp-wrap h2, .emp-wrap h4, .emp-wrap h5{ font-family:'Space Grotesk', sans-serif; }
+
+  .emp-header{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+    background: var(--emp-panel); border:1px solid var(--emp-border); border-radius:14px;
+    padding:20px 24px; margin-bottom:20px;
+  }
+  .emp-header h1{ margin:0 0 4px; font-size:1.5rem; }
+  .emp-header p{ margin:0; color: var(--emp-muted); font-size:.9rem; }
+  .emp-badge{
+    background: rgba(212,132,155,.1); color: var(--emp-accent); border:1px solid rgba(212,132,155,.25);
+    padding:6px 14px; border-radius:999px; font-size:.82rem; font-weight:600;
+  }
+
+  .confirm-banner{
+    display:none; align-items:center; gap:10px; background:#f0f9f2; border:1px solid #bfe6c8;
+    color:#1b5e30; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:.9rem; font-weight:500;
+  }
+  .confirm-banner.show{ display:flex; }
+  .confirm-banner i{ font-size:1.05rem; }
+
+  .emp-grid{ display:grid; grid-template-columns: 1fr 1.3fr; gap:18px; }
+  @media (max-width: 950px){ .emp-grid{ grid-template-columns: 1fr; } }
+
+  .emp-panel{
+    background: var(--emp-panel); border:1px solid var(--emp-border); border-radius:14px; padding:22px;
+  }
+  .emp-panel h5{ margin:0 0 14px; font-weight:700; }
+
+  .profile-row{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--emp-border); font-size:.9rem; }
+  .profile-row:last-child{ border-bottom:none; }
+  .profile-row .k{ color: var(--emp-muted); }
+  .profile-row .v{ font-weight:600; }
+
+  .action-form .form-label{ font-size:.8rem; color: var(--emp-muted); margin-top:10px; }
+  .action-form select, .action-form input{
+    background: #F7D0DC; border:1px solid var(--emp-border); border-radius:8px;
+  }
+  .field-group{ display:none; }
+  .field-group.active{ display:block; }
+  .btn-submit-action{
+    background: var(--emp-accent); border:none; color:#fff; font-weight:600;
+    padding:10px 20px; border-radius:9px; margin-top:16px;
+  }
+  .btn-submit-action:hover{ background:#BF6E86; color:#fff; }
+
+  .activity-item{
+    border-left:3px solid var(--emp-border); padding:10px 14px; border-radius:6px;
+    background:#F7D0DC; margin-bottom:8px; font-size:.85rem;
+  }
+  .activity-item .top{ display:flex; justify-content:space-between; font-weight:600; }
+  .activity-item .meta{ color: var(--emp-muted); font-size:.78rem; margin-top:2px; }
+  .activity-empty{ color: var(--emp-muted); font-size:.88rem; padding:10px 0; }
+
+  .guidance-box{
+    border-radius:10px; padding:14px 16px; font-size:.87rem; border:1px solid var(--emp-border);
+    background:#F7D0DC;
+  }
+  .guidance-box.allowed{ border-left:3px solid #16a34a; }
+  .guidance-box.restricted{ border-left:3px solid #dc2626; }
+  .guidance-summary{ font-weight:600; margin-bottom:10px; color:var(--emp-text); }
+  .guidance-line{ display:flex; gap:8px; align-items:flex-start; margin-bottom:8px; color:var(--emp-muted); }
+  .guidance-line:last-child{ margin-bottom:0; }
+  .guidance-line strong{ color:var(--emp-text); }
+
+  .work-title{ font-weight:700; font-size:1rem; margin-bottom:4px; }
+  .work-sub{ color:var(--emp-muted); font-size:.85rem; margin-bottom:14px; }
+
+  .quick-row{ display:flex; flex-direction:column; gap:8px; }
+  .quick-row form{ margin:0; }
+  .btn-quick{
+    width:100%; text-align:left; background:#F7D0DC; border:1px solid var(--emp-border);
+    border-radius:9px; padding:10px 14px; font-size:.87rem; font-weight:500; color:var(--emp-text);
+  }
+  .btn-quick:hover{ border-color:var(--emp-accent); background:#FFE9EF; }
+  .btn-quick.primary{ background: var(--emp-accent); color:#fff; border-color:var(--emp-accent); }
+  .btn-quick.primary:hover{ background:#BF6E86; }
+  .btn-quick i{ width:18px; margin-right:6px; }
+
+  .advanced-toggle{
+    margin-top:18px; padding-top:14px; border-top:1px solid var(--emp-border);
+    color:var(--emp-muted); font-size:.82rem; cursor:pointer; user-select:none;
+  }
+  .advanced-toggle:hover{ color:var(--emp-accent); }
+  .advanced-toggle i{ transition: transform .15s ease; margin-right:4px; }
+  .advanced-toggle.open i{ transform: rotate(90deg); }
+  .advanced-panel{ display:none; margin-top:14px; }
+  .advanced-panel.open{ display:block; }
+
+  .email-overlay{
+    position:fixed; inset:0; background:rgba(20,25,40,.55); backdrop-filter:blur(2px);
+    display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;
+  }
+  .email-overlay.show{ display:flex; }
+  .email-box{
+    background:#fff; border-radius:14px; max-width:480px; width:100%;
+    max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,.25);
+  }
+  .email-header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 20px; border-bottom:1px solid var(--emp-border);
+  }
+  .email-header h5{ margin:0; font-weight:700; }
+  .email-close{ background:none; border:none; font-size:1.5rem; color:var(--emp-muted); cursor:pointer; line-height:1; }
+  .email-body{ padding:18px 20px; }
+  .email-body .form-label{ font-size:.8rem; color:var(--emp-muted); margin-top:10px; }
+  .email-body .form-control{ background:#F7D0DC; border:1px solid var(--emp-border); }
+  .email-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+  .live-dot{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:#D4849B; margin-right:5px; box-shadow:0 0 5px #D4849B;
+  }
+
+  .emp-right-col{ display:flex; flex-direction:column; gap:18px; }
+
+  .task-list{ display:flex; flex-direction:column; gap:8px; }
+  .task-item{
+    display:flex; align-items:center; gap:12px; padding:10px 12px;
+    border:1px solid var(--emp-border); border-radius:9px; background:#F7D0DC;
+  }
+  .task-num{
+    flex:none; width:26px; height:26px; border-radius:50%; background:#F5D7DF;
+    color:var(--emp-muted); font-weight:700; font-size:.82rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .task-text{ font-size:.9rem; color:var(--emp-text); }
+  .task-item.task-done{ background:rgba(22,163,74,.06); border-color:rgba(22,163,74,.3); }
+  .task-item.task-done .task-num{ background:#16a34a; color:#fff; }
+  .task-item.task-done .task-text{ color:var(--emp-muted); text-decoration:line-through; }
+</style>
+
+<div class="container-fluid emp-wrap">
+
+  <div class="emp-header">
+    <div>
+      <h1><i class="fa-solid fa-id-badge"></i> Welcome, {{ employee.user_id }}</h1>
+      <p>{{ employee.role }} · {{ employee.department }} · {{ employee.province }}</p>
+    </div>
+    <span class="emp-badge">Logged in as Employee · {{ current_time }}</span>
+  </div>
+
+  <div id="confirmBanner" class="confirm-banner"></div>
+
+  <div class="emp-grid">
+
+    <!-- profile -->
+    <div class="emp-panel">
+      <h5><i class="fa-solid fa-user"></i> Your details</h5>
+      <div class="profile-row"><span class="k">User ID</span><span class="v">{{ employee.user_id }}</span></div>
+      <div class="profile-row"><span class="k">Role</span><span class="v">{{ employee.role }}</span></div>
+      <div class="profile-row"><span class="k">Department</span><span class="v">{{ employee.department }}</span></div>
+      <div class="profile-row"><span class="k">Province</span><span class="v">{{ employee.province }}</span></div>
+      <div class="profile-row"><span class="k">Subject permission</span><span class="v">{{ employee.subject_permission }}</span></div>
+      <div class="profile-row"><span class="k">Work email</span><span class="v">{{ employee.work_email }}</span></div>
+
+      <h5 class="mt-4"><i class="fa-solid fa-briefcase"></i> What's my job?</h5>
+      <div class="guidance-box {{ 'allowed' if guidance.allowed else 'restricted' }}">
+        <p class="guidance-summary">{{ guidance.summary }}</p>
+        <div class="guidance-line">
+          <i class="fa-solid fa-circle-check" style="color:#16a34a;"></i>
+          <div><strong>You may:</strong> {{ guidance.may }}</div>
+        </div>
+        <div class="guidance-line">
+          <i class="fa-solid fa-circle-xmark" style="color:#dc2626;"></i>
+          <div><strong>You may not:</strong> {{ guidance.may_not }}</div>
+        </div>
+        <div class="guidance-line">
+          <i class="fa-solid fa-book" style="color:var(--emp-accent);"></i>
+          <div><strong>Your assigned subject:</strong> {{ employee.subject_permission }}</div>
+        </div>
+      </div>
+
+      <h5 class="mt-4"><i class="fa-solid fa-clock-rotate-left"></i> Your recent activity</h5>
+      {% for a in recent_activity %}
+      <div class="activity-item">
+        <div class="top">
+          <span>
+            {% if a.source == "Live" %}<span class="live-dot"></span>{% endif %}
+            {{ a.action }}
+          </span>
+          <span>{{ a.timestamp[:16].replace('T',' ') }}</span>
+        </div>
+        <div class="meta">
+          {% if a.filename %}{{ a.filename }} · {% endif %}
+          {% if a.accessed_subject %}{{ a.accessed_subject }} · {% endif %}
+          {{ a.location }}
+        </div>
+      </div>
+      {% else %}
+      <div class="activity-empty">Nothing logged yet today.</div>
+      {% endfor %}
+    </div>
+
+    <!-- work actions -->
+    <div class="emp-right-col">
+
+    <div class="emp-panel">
+      <h5><i class="fa-solid fa-list-check"></i> Today's tasks</h5>
+      <p style="color:var(--emp-muted); font-size:.85rem; margin-top:-8px; margin-bottom:14px;">
+        Your assigned duties for today. Complete them by logging the matching action below.
+      </p>
+
+      <div class="task-list">
+        {% for t in daily_tasks %}
+        <div class="task-item {{ 'task-done' if t.done else '' }}">
+          <div class="task-num">
+            {% if t.done %}<i class="fa-solid fa-check"></i>{% else %}{{ t.id }}{% endif %}
+          </div>
+          <div class="task-text">{{ t.description }}</div>
+        </div>
+        {% else %}
+        <div class="activity-empty">No tasks assigned for today.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- work actions -->
+    <div class="emp-panel">
+      <h5><i class="fa-solid fa-briefcase"></i> Do your work</h5>
+      <p style="color:var(--emp-muted); font-size:.85rem; margin-top:-8px; margin-bottom:16px;">
+        Logging in already recorded a Logon for you.
+      </p>
+
+      {% if employee.role == "Data Capturer" %}
+
+        <h6 class="work-title">Capture a result</h6>
+        <p class="work-sub">You capture student results for <strong>{{ employee.subject_permission }}</strong>. Enter a student ID and their mark, the same way you would from a real script.</p>
+
+        <form class="action-form" method="POST" action="{{ url_for('employee_action') }}">
+          <input type="hidden" name="action" value="File Access">
+          <input type="hidden" name="accessed_subject" value="{{ employee.subject_permission }}">
+
+          <label class="form-label">Student ID</label>
+          <input class="form-control" type="text" name="student_id" placeholder="e.g. STU-4471" required>
+
+          <label class="form-label">Mark (%)</label>
+          <input class="form-control" type="number" name="mark" min="0" max="100" placeholder="e.g. 76" required>
+
+          <button type="submit" class="btn-submit-action"><i class="fa-solid fa-check"></i> Capture Result</button>
+        </form>
+
+        <div class="quick-row">
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="Download">
+            <input type="hidden" name="filename" value="Results_Template.xlsx">
+            <button class="btn-quick"><i class="fa-solid fa-download"></i> Download results template</button>
+          </form>
+          <button type="button" class="btn-quick" onclick="openEmailModal('supervisor@dbe.gov.za', 'Results captured', 'Hi,\n\nI have finished capturing results for {{ employee.subject_permission }}.\n\nRegards,\n{{ employee.user_id }}')">
+            <i class="fa-solid fa-envelope"></i> Email supervisor: capturing done
+          </button>
+        </div>
+
+      {% elif employee.role in ["Senior Examination Officer", "Chief Examination Officer", "Provincial Examination Coordinator"] %}
+
+        <h6 class="work-title">Review the {{ employee.subject_permission }} paper</h6>
+        <p class="work-sub">
+          {% if employee.role == "Chief Examination Officer" %}You give the final {{ employee.subject_permission }} paper sign-off.
+          {% elif employee.role == "Provincial Examination Coordinator" %}You track {{ employee.subject_permission }} paper distribution for your province.
+          {% else %}You manage {{ employee.subject_permission }} exam admin.{% endif %}
+        </p>
+
+        <div class="quick-row">
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="File Access">
+            <input type="hidden" name="accessed_subject" value="{{ employee.subject_permission }}">
+            <input type="hidden" name="filename" value="{{ employee.subject_permission }}_Paper1_2026.pdf">
+            <button class="btn-quick primary"><i class="fa-solid fa-file-lines"></i> Open {{ employee.subject_permission }} paper</button>
+          </form>
+
+          {% if employee.role == "Senior Examination Officer" %}
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="File Copy">
+            <input type="hidden" name="accessed_subject" value="{{ employee.subject_permission }}">
+            <input type="hidden" name="filename" value="{{ employee.subject_permission }}_Paper1_2026.pdf">
+            <button class="btn-quick"><i class="fa-solid fa-print"></i> Send to printing queue</button>
+          </form>
+          {% endif %}
+
+          {% if employee.role == "Provincial Examination Coordinator" %}
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="Web Browsing">
+            <input type="hidden" name="url" value="intranet.dbe.gov.za/logistics">
+            <button class="btn-quick"><i class="fa-solid fa-truck"></i> Check delivery schedule</button>
+          </form>
+          {% endif %}
+
+          <button type="button" class="btn-quick" onclick="openEmailModal('provincial.office@dbe.gov.za', '{{ employee.subject_permission }} paper sign-off', 'Hi,\n\nConfirming sign-off on the {{ employee.subject_permission }} paper.\n\nRegards,\n{{ employee.user_id }}')">
+            <i class="fa-solid fa-envelope"></i> Email sign-off confirmation
+          </button>
+        </div>
+
+      {% elif employee.role == "Printing Technician" %}
+
+        <h6 class="work-title">Print queue</h6>
+        <p class="work-sub">Ready to print: <strong>{{ employee.subject_permission }} Paper 1</strong></p>
+
+        <form class="action-form" method="POST" action="{{ url_for('employee_action') }}">
+          <input type="hidden" name="action" value="File Copy">
+          <input type="hidden" name="accessed_subject" value="{{ employee.subject_permission }}">
+
+          <label class="form-label">File to copy to the print server</label>
+          <input class="form-control" type="text" name="filename" value="{{ employee.subject_permission }}_Paper1_2026.pdf">
+
+          <button type="submit" class="btn-submit-action"><i class="fa-solid fa-print"></i> Copy to Print Server</button>
+        </form>
+
+        <div class="quick-row">
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="USB Insert">
+            <input type="hidden" name="filename" value="{{ employee.subject_permission }}_PrintBatch.zip">
+            <button class="btn-quick"><i class="fa-solid fa-usb"></i> Insert secure USB for batch</button>
+          </form>
+        </div>
+
+      {% elif employee.role == "ICT Administrator" %}
+
+        <h6 class="work-title">System monitoring</h6>
+        <p class="work-sub">You keep the IT systems running -- no exam paper content here.</p>
+
+        <div class="quick-row">
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="File Access">
+            <button class="btn-quick primary"><i class="fa-solid fa-list-ul"></i> Check today's access logs</button>
+          </form>
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="Web Browsing">
+            <input type="hidden" name="url" value="intranet.dbe.gov.za/system-status">
+            <button class="btn-quick"><i class="fa-solid fa-server"></i> Check system status dashboard</button>
+          </form>
+          <button type="button" class="btn-quick" onclick="openEmailModal('it-support@dbe.gov.za', 'Access log review', 'Hi,\n\nFlagging this after reviewing today\'s access logs.\n\nRegards,\n{{ employee.user_id }}')">
+            <i class="fa-solid fa-envelope"></i> Email IT support
+          </button>
+        </div>
+
+      {% elif employee.role == "Warehouse Officer" %}
+
+        <h6 class="work-title">Stock &amp; logistics</h6>
+        <p class="work-sub">You manage storage and delivery of exam materials -- you never open the papers themselves.</p>
+
+        <div class="quick-row">
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="USB Device">
+            <button class="btn-quick primary"><i class="fa-solid fa-barcode"></i> Scan inventory movement</button>
+          </form>
+          <form method="POST" action="{{ url_for('employee_action') }}">
+            <input type="hidden" name="action" value="Web Browsing">
+            <input type="hidden" name="url" value="intranet.dbe.gov.za/logistics">
+            <button class="btn-quick"><i class="fa-solid fa-truck"></i> Check delivery schedule</button>
+          </form>
+          <button type="button" class="btn-quick" onclick="openEmailModal('coordinator@dbe.gov.za', 'Stock received', 'Hi,\n\nConfirming stock has been received and logged.\n\nRegards,\n{{ employee.user_id }}')">
+            <i class="fa-solid fa-envelope"></i> Confirm stock received
+          </button>
+        </div>
+
+      {% endif %}
+
+      <!-- advanced / fallback: any action, any subject -->
+      <div class="advanced-toggle" onclick="toggleAdvanced()">
+        <i class="fa-solid fa-chevron-right" id="advancedChevron"></i> Other action (testing / off-script)
+      </div>
+
+      <div id="advancedPanel" class="advanced-panel">
+
+        <form class="action-form" method="POST" action="{{ url_for('employee_action') }}" onsubmit="return prepareSubmit()">
+
+          <label class="form-label">What are you doing?</label>
+          <select class="form-select" name="action" id="actionSelect" onchange="toggleFields()">
+            {% for a in action_options %}
+            <option value="{{ a }}">{{ a }}</option>
+            {% endfor %}
+          </select>
+
+          <div class="field-group" data-fields="File Access,Download,File Copy,USB Insert">
+            <label class="form-label">File name</label>
+            <input class="form-control" type="text" name="filename" placeholder="e.g. Geography_Paper1_2026.pdf">
+          </div>
+
+          <div class="field-group" data-fields="Web Browsing">
+            <label class="form-label">URL</label>
+            <input class="form-control" type="text" name="url" placeholder="e.g. intranet.dbe.gov.za/results">
+          </div>
+
+          <div class="field-group" data-fields="Email">
+            <label class="form-label">To</label>
+            <input class="form-control" type="text" name="to_email" placeholder="colleague@dbe.gov.za">
+            <label class="form-label">From</label>
+            <input class="form-control" type="text" name="from_email" value="{{ employee.work_email }}" readonly>
+          </div>
+
+          <div class="field-group" data-fields="File Access,Download,File Copy,USB Insert">
+            <label class="form-label">Subject this relates to</label>
+            <select class="form-select" name="accessed_subject">
+              {% for s in subject_options %}
+              <option value="{{ s }}" {% if s == employee.subject_permission %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field-group" data-fields="File Access,Download,File Copy,USB Insert">
+            <label class="form-label">Records accessed</label>
+            <input class="form-control" type="number" name="records_accessed" value="1" min="1">
+          </div>
+
+          <input type="hidden" name="location" value="Workstation">
+
+          <button type="submit" class="btn-submit-action">
+            <i class="fa-solid fa-check"></i> Log this action
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================================== -->
+<!-- EMAIL COMPOSE MODAL -->
+<!-- ===================================== -->
+<div id="emailModal" class="email-overlay">
+  <div class="email-box">
+    <div class="email-header">
+      <h5><i class="fa-solid fa-envelope"></i> Compose email</h5>
+      <button type="button" class="email-close" onclick="closeEmailModal()">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('employee_action') }}" class="email-body">
+      <input type="hidden" name="action" value="Email">
+
+      <label class="form-label">From</label>
+      <input class="form-control" type="text" value="{{ employee.work_email }}" readonly>
+
+      <label class="form-label">To</label>
+      <input class="form-control" type="text" name="to_email" id="emailTo" required>
+
+      <label class="form-label">Subject</label>
+      <input class="form-control" type="text" name="filename" id="emailSubject" required>
+
+      <label class="form-label">Message</label>
+      <textarea class="form-control" id="emailMessage" rows="6" required></textarea>
+
+      <div class="email-actions">
+        <button type="button" class="btn btn-outline-secondary" onclick="closeEmailModal()">Cancel</button>
+        <button type="submit" class="btn-submit-action" style="margin-top:0;"><i class="fa-solid fa-paper-plane"></i> Send Email</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+
+  function openEmailModal(to, subject, message) {
+    document.getElementById('emailTo').value = to;
+    document.getElementById('emailSubject').value = subject;
+    document.getElementById('emailMessage').value = message;
+    document.getElementById('emailModal').classList.add('show');
+  }
+  function closeEmailModal() {
+    document.getElementById('emailModal').classList.remove('show');
+  }
+
+  function toggleAdvanced() {
+    document.getElementById('advancedPanel').classList.toggle('open');
+    document.querySelector('.advanced-toggle').classList.toggle('open');
+  }
+
+  function toggleFields() {
+    const action = document.getElementById('actionSelect').value;
+    document.querySelectorAll('.field-group').forEach(function (group) {
+      const fields = group.dataset.fields.split(',');
+      group.classList.toggle('active', fields.includes(action));
+    });
+  }
+  function prepareSubmit() { return true; }
+  toggleFields();
+
+  // If we just logged an action, show a clear on-screen confirmation --
+  // and if it was file-based, actually download the file too. Both fire
+  // once on page load, then the URL is cleaned so refreshing doesn't
+  // re-trigger them.
+  {% if request.args.get('done') == '1' %}
+  (function () {
+    const fileAction = {{ request.args.get('file_action', '')|tojson }};
+    const filename = {{ request.args.get('filename', '')|tojson }};
+    const isDownload = {{ 'true' if request.args.get('download') == '1' else 'false' }};
+
+    const messages = {
+      "Email": filename ? "Email sent: \"" + filename + "\"" : "Email sent.",
+      "File Copy": filename ? filename + " copied and sent to the printing queue. Check your downloads." : "File copied and sent.",
+      "Download": filename ? filename + " downloaded. Check your downloads." : "File downloaded.",
+      "File Access": filename ? filename + " opened." : "File opened.",
+      "USB Insert": filename ? filename + " copied to USB." : "File copied to USB.",
+      "USB Device": "Device scan logged.",
+      "Web Browsing": "Page visit logged.",
+    };
+    const text = messages[fileAction] || "Action logged.";
+
+    const banner = document.getElementById('confirmBanner');
+    banner.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + text;
+    banner.classList.add('show');
+
+    if (isDownload) {
+      const params = new URLSearchParams({
+        filename: filename,
+        subject: {{ request.args.get('subject', '')|tojson }},
+        file_action: fileAction
+      });
+      const link = document.createElement('a');
+      link.href = '{{ url_for("employee_get_file") }}?' + params.toString();
+      link.download = '';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  })();
+  {% endif %}
+</script>
+
+{% endblock %}

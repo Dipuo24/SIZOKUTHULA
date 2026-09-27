@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>SIZOKUTHOLA</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- ================================================= -->
+    <!-- BABY PINK THEME                                    -->
+    <!-- Loaded last so it overrides Bootstrap and          -->
+    <!-- style.css. Every page that extends base.html       -->
+    <!-- picks this up automatically.                       -->
+    <!-- ================================================= -->
+    <style>
+      :root{
+        --pink-bg:        #FFF5F8;
+        --pink-panel:     #FCE0E8;
+        --pink-panel-alt: #F7D0DC;
+        --pink-border:    #F0BCCB;
+        --pink-text:      #4A2C35;
+        --pink-muted:     #9B7A83;
+        --pink-accent:    #D4849B;
+        --pink-accent-hv: #BF6E86;
+        --pink-deep:      #8B4A5C;
+      }
+
+      body{ background: var(--pink-bg) !important; color: var(--pink-text); }
+
+      /* ---------- sidebar ---------- */
+      .sidebar{
+        background: linear-gradient(180deg, #F7C3D0 0%, #EBA9BC 100%) !important;
+        color: var(--pink-deep) !important;
+      }
+      .sidebar-header{ border-bottom: 1px solid rgba(139,74,92,.18); }
+      .sidebar-header h3,
+      .sidebar-header p{ color: var(--pink-deep) !important; }
+      .sidebar ul li a{ color: var(--pink-deep) !important; }
+      .sidebar ul li a:hover{
+        background: rgba(255,255,255,.55) !important;
+        color: #6E3A49 !important;
+      }
+
+      /* ---------- top bar ---------- */
+      .topbar{
+        background: var(--pink-panel) !important;
+        border-bottom: 1px solid var(--pink-border);
+      }
+      .topbar h2{ color: var(--pink-deep) !important; }
+      .topbar small,
+      .user-info small{ color: var(--pink-muted) !important; }
+      .user-box i{ color: var(--pink-accent) !important; }
+      .user-info h6{ color: var(--pink-text) !important; }
+
+      .page-content{ background: var(--pink-bg); }
+
+      /* ---------- cards ---------- */
+      .card{ border-color: var(--pink-border) !important; }
+      .card-header{
+        background: var(--pink-panel-alt) !important;
+        border-bottom: 1px solid var(--pink-border) !important;
+        color: var(--pink-text);
+      }
+      .card-header.bg-white{ background: var(--pink-panel-alt) !important; }
+
+      /* ---------- headings & accents ---------- */
+      .text-primary{ color: var(--pink-accent) !important; }
+      .text-muted{ color: var(--pink-muted) !important; }
+      h1, h2, h3, h4, h5{ color: var(--pink-deep); }
+
+      /* ---------- buttons ---------- */
+      .btn-primary{
+        background-color: var(--pink-accent) !important;
+        border-color: var(--pink-accent) !important;
+        color: #fff !important;
+      }
+      .btn-primary:hover{
+        background-color: var(--pink-accent-hv) !important;
+        border-color: var(--pink-accent-hv) !important;
+      }
+      .btn-outline-secondary{
+        color: var(--pink-muted) !important;
+        border-color: var(--pink-border) !important;
+      }
+      .btn-outline-secondary:hover{
+        background: var(--pink-panel-alt) !important;
+        color: var(--pink-text) !important;
+      }
+
+      /* ---------- tables ---------- */
+      .table{ color: var(--pink-text); }
+      .table > thead.table-light th,
+      .table thead th{
+        background: var(--pink-panel-alt) !important;
+        color: var(--pink-muted) !important;
+        border-color: var(--pink-border) !important;
+      }
+      .table td, .table th{ border-color: var(--pink-border) !important; }
+      .table-hover > tbody > tr:hover > *{
+        background: #FFE9EF !important;
+        color: var(--pink-text);
+      }
+
+      /* ---------- forms ---------- */
+      .form-control, .form-select{
+        background: var(--pink-panel-alt);
+        border-color: var(--pink-border);
+        color: var(--pink-text);
+      }
+      .form-control:focus, .form-select:focus{
+        border-color: var(--pink-accent);
+        box-shadow: 0 0 0 .2rem rgba(212,132,155,.22);
+        background: #fff;
+      }
+      .form-label{ color: var(--pink-muted); }
+
+      /* ---------- KPI / dashboard cards ---------- */
+      .dashboard-card, .employee-card{
+        background: var(--pink-panel);
+        border: 1px solid var(--pink-border);
+      }
+      .dashboard-card h6, .employee-card h6{ color: var(--pink-muted); }
+      .dashboard-card h2, .employee-card h2{ color: var(--pink-deep); }
+
+      /* Soften Bootstrap's loud contextual fills into the pink family,
+         while keeping severity readable at a glance. */
+      .bg-primary{ background-color: var(--pink-accent) !important; }
+      .bg-dark   { background-color: var(--pink-deep) !important; }
+      .bg-secondary{ background-color: var(--pink-muted) !important; }
+      .bg-info   { background-color: #B57EA8 !important; color:#fff !important; }
+      .bg-success{ background-color: #7FA88A !important; }
+      .bg-warning{ background-color: #E8B57C !important; }
+      .bg-danger { background-color: #C2185B !important; }
+
+      .alert-success{
+        background: #F1F8F3; border-color:#CDE5D5; color:#3F6B4E;
+      }
+      .alert-danger{
+        background: #FDEDF2; border-color:#F5C6D6; color:#8B2447;
+      }
+
+      /* Cards and white surfaces -> baby pink, so the panels themselves
+         are pink rather than white boxes sitting on a pink page. */
+      .card, .card-body{
+        background-color: var(--pink-panel) !important;
+        color: var(--pink-text);
+      }
+      .bg-white{ background-color: var(--pink-panel-alt) !important; }
+      .table{ background-color: transparent !important; }
+      .table > :not(caption) > * > *{
+        background-color: transparent !important;
+        color: var(--pink-text);
+      }
+      .table-borderless td{ background: transparent !important; }
+      .modal-content, .dropdown-menu{
+        background-color: var(--pink-panel) !important;
+        border-color: var(--pink-border) !important;
+      }
+      .list-group-item{
+        background-color: var(--pink-panel-alt) !important;
+        border-color: var(--pink-border) !important;
+        color: var(--pink-text);
+      }
+      .progress{ background-color: var(--pink-panel-alt) !important; }
+      canvas{ background: transparent; }
+    </style>
+
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar">
+
+    <div class="sidebar-header">
+
+        <img src="{{ url_for('static', filename='images/logo.png') }}">
+
+        <h3>SIZOKUTHOLA</h3>
+
+        <p>Security Operations Centre</p>
+
+    </div>
+
+    <ul>
+
+        {% if role == 'Employee' %}
+
+        <li>
+            <a href="{{ url_for('employee_portal') }}">
+                <i class="fa-solid fa-briefcase"></i>
+                My Portal
+            </a>
+        </li>
+
+        {% elif role == 'Security Analyst' %}
+
+        <li>
+            <a href="{{ url_for('alerts') }}">
+                <i class="fa-solid fa-shield-halved"></i>
+                Security Alerts
+            </a>
+        </li>
+
+        {% else %}
+
+        <li>
+            <a href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-gauge"></i>
+                Dashboard
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ url_for('employees') }}">
+                <i class="fa-solid fa-users"></i>
+                Employees
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ url_for('alerts') }}">
+                <i class="fa-solid fa-shield-halved"></i>
+                Security Alerts
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ url_for('analytics') }}">
+                <i class="fa-solid fa-chart-column"></i>
+                Analytics
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ url_for('reports') }}">
+                <i class="fa-solid fa-file-lines"></i>
+                Reports
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ url_for('settings') }}">
+                <i class="fa-solid fa-gear"></i>
+                Settings
+            </a>
+        </li>
+
+        {% endif %}
+
+        <li>
+            <a href="{{ url_for('logout') }}">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </li>
+
+    </ul>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main-content">
+
+    <!-- TOP BAR -->
+
+    <div class="topbar">
+
+        <div>
+
+            <h2>
+                Department of Basic Education
+            </h2>
+
+            <small>
+                AI-Powered Insider Threat Detection System
+            </small>
+
+        </div>
+
+        <div class="user-box">
+
+            <i class="fa-solid fa-circle-user fa-3x"></i>
+
+            <div class="user-info">
+
+                <h6>{{ user }}</h6>
+
+                <small>{{ role }}</small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PAGE -->
+
+    <div class="page-content">
+
+        {% block content %}
+
+        {% endblock %}
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

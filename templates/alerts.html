@@ -1,0 +1,744 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+  :root{
+    --soc-bg: #FFF5F8;
+    --soc-panel: #FCE0E8;
+    --soc-panel-alt: #F7D0DC;
+    --soc-border: #F0BCCB;
+    --soc-text: #4A2C35;
+    --soc-muted: #9B7A83;
+    --soc-critical: #C2185B;
+    --soc-high: #C77D3A;
+    --soc-medium: #B57EA8;
+    --soc-low: #7FA88A;
+    --soc-accent: #D4849B;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap');
+
+  .soc-wrap{
+    background: var(--soc-bg);
+    color: var(--soc-text);
+    padding: 28px;
+    border-radius: 18px;
+    font-family: 'Inter', sans-serif;
+  }
+  .soc-wrap h1, .soc-wrap h2, .soc-wrap h4, .soc-wrap h5, .soc-wrap h6{
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .soc-mono{ font-family:'JetBrains Mono', monospace; }
+
+  /* ---------- header ---------- */
+  .soc-header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    flex-wrap:wrap; gap:20px; margin-bottom:24px;
+  }
+  .soc-header .eyebrow{
+    color: var(--soc-accent); font-size:.75rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:600; margin-bottom:6px;
+  }
+  .soc-header h1{ font-size:1.9rem; font-weight:700; margin:0 0 6px 0; }
+  .soc-header p{ color: var(--soc-muted); margin:0; max-width:520px; }
+  .status-pill{
+    display:inline-flex; align-items:center; gap:8px; padding:6px 14px;
+    border-radius:999px; background: rgba(127,168,138,.12); border:1px solid rgba(127,168,138,.35);
+    color: var(--soc-low); font-size:.82rem; font-weight:600; margin-top:14px;
+  }
+  .status-pill .dot{ width:8px; height:8px; border-radius:50%; background: var(--soc-low); box-shadow:0 0 8px var(--soc-low); }
+
+  .clock-card{
+    background: var(--soc-panel); border:1px solid var(--soc-border); border-radius:14px;
+    padding:16px 20px; min-width:230px; text-align:right;
+  }
+  .clock-card .label{ color: var(--soc-muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+  .clock-card .time{ font-size:1.35rem; font-weight:600; margin:4px 0 12px; }
+  .btn-chime{
+    background:transparent; border:1px solid var(--soc-border); color:var(--soc-muted);
+    border-radius:8px; padding:6px 12px; font-size:.8rem;
+  }
+  .btn-chime.off{ border-color: rgba(194,24,91,.5); color: var(--soc-critical); }
+
+  /* ---------- siren banner ---------- */
+  .siren-banner{
+    background: linear-gradient(90deg, rgba(194,24,91,.18), rgba(194,24,91,.06));
+    border:1px solid rgba(194,24,91,.5);
+    border-radius:14px; padding:18px 22px; margin-bottom:24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .siren-banner.d-none{ display:none; }
+  .siren-left{ display:flex; align-items:center; gap:14px; }
+  .siren-ring{
+    position:relative; width:44px; height:44px; flex:none;
+  }
+  .siren-ring::before{
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background: conic-gradient(var(--soc-critical), transparent 70%);
+    animation: spin 1.4s linear infinite;
+  }
+  .siren-ring::after{
+    content:"\f071"; font-family:"Font Awesome 6 Free"; font-weight:900;
+    position:absolute; inset:5px; border-radius:50%; background: var(--soc-panel);
+    display:flex; align-items:center; justify-content:center; color: var(--soc-critical);
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .siren-banner h5{ margin:0 0 2px; font-weight:700; }
+  .siren-banner p{ margin:0; color:#4A2C35; font-size:.9rem; }
+  .btn-review{
+    background: var(--soc-critical); border:none; color:#fff; font-weight:600;
+    padding:10px 18px; border-radius:10px; white-space:nowrap;
+  }
+  .btn-review:hover{ background:#A3154D; color:#fff; }
+
+  /* ---------- stat strip ---------- */
+  .stat-strip{ display:grid; grid-template-columns: repeat(4,1fr); gap:14px; margin-bottom:24px; }
+  .stat-card{
+    background: var(--soc-panel); border:1px solid var(--soc-border); border-radius:14px;
+    padding:16px 18px; border-left:3px solid var(--stat-color, var(--soc-muted));
+  }
+  .stat-card .n{ font-family:'JetBrains Mono', monospace; font-size:1.8rem; font-weight:600; line-height:1; }
+  .stat-card .l{ color: var(--soc-muted); font-size:.8rem; margin-top:6px; }
+  .stat-card.critical{ --stat-color: var(--soc-critical); }
+  .stat-card.high{ --stat-color: var(--soc-high); }
+  .stat-card.medium{ --stat-color: var(--soc-medium); }
+  .stat-card.low{ --stat-color: var(--soc-low); }
+
+  /* ---------- main panels ---------- */
+  .panel{
+    background: var(--soc-panel); border:1px solid var(--soc-border); border-radius:16px;
+    padding:22px; height:100%;
+  }
+  .panel-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .panel-head h5{ margin:0; font-weight:700; }
+  .ai-level-box{ text-align:center; padding:14px 0 6px; }
+  .ai-level-box .lvl{ font-size:1.6rem; font-weight:700; color: var(--soc-critical); }
+  .risk-row{ display:flex; gap:12px; margin-top:14px; }
+  .risk-box{
+    flex:1; background: var(--soc-panel-alt); border:1px solid var(--soc-border);
+    border-radius:10px; padding:12px 14px;
+  }
+  .risk-box .label{ color: var(--soc-muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; }
+  .risk-box .value{ font-weight:600; margin-top:2px; }
+  .confidence-track{
+    background: var(--soc-panel-alt); border-radius:8px; height:10px; overflow:hidden; margin-top:6px;
+  }
+  .confidence-fill{ height:100%; background: linear-gradient(90deg, var(--soc-accent), var(--soc-low)); }
+  .action-list{ list-style:none; padding:0; margin:14px 0 0; display:flex; flex-direction:column; gap:8px; }
+  .action-list li{
+    background: var(--soc-panel-alt); border:1px solid var(--soc-border); border-radius:10px;
+    padding:10px 12px; font-size:.88rem; display:flex; gap:10px; align-items:flex-start;
+  }
+  .status-table{ width:100%; margin-top:6px; }
+  .status-table td{ padding:8px 0; border-bottom:1px solid var(--soc-border); color: var(--soc-text); }
+  .status-table td:first-child{ color: var(--soc-muted); }
+  .badge-on{ background: rgba(127,168,138,.15); color: var(--soc-low); border:1px solid rgba(127,168,138,.35); padding:3px 10px; border-radius:999px; font-size:.75rem; font-weight:600; }
+  .badge-run{ background: rgba(212,132,155,.15); color: var(--soc-accent); border:1px solid rgba(212,132,155,.35); padding:3px 10px; border-radius:999px; font-size:.75rem; font-weight:600; }
+
+  /* ---------- track incidents ---------- */
+  .track-bar{ display:flex; justify-content:space-between; align-items:center; margin:24px 0 14px; }
+  .btn-track{
+    background: var(--soc-panel); border:1px solid var(--soc-border); color: var(--soc-text);
+    padding:10px 18px; border-radius:10px; font-weight:600;
+  }
+  .btn-track:hover{ border-color: var(--soc-accent); color: var(--soc-accent); }
+  .incidents-panel{ background: var(--soc-panel); border:1px solid var(--soc-border); border-radius:16px; overflow:hidden; }
+  .incidents-panel table{ margin:0; color: var(--soc-text); }
+  .incidents-panel thead{ background: var(--soc-panel-alt); }
+  .incidents-panel thead th{ color: var(--soc-muted); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; border:none; }
+  .incidents-panel tbody tr{ border-color: var(--soc-border); }
+  .incidents-panel tbody td{ border-color: var(--soc-border); vertical-align:middle; }
+
+  .evidence-mismatch{
+    color: var(--soc-critical); font-weight:600;
+    background: rgba(194,24,91,.12); padding:2px 8px; border-radius:6px;
+  }
+
+  /* ---------- verification log ---------- */
+  .verify-log{ margin-top:20px; }
+  .verification-entry{
+    background: var(--soc-panel-alt); border:1px solid var(--soc-border); border-radius:10px;
+    padding:10px 14px; font-size:.85rem; margin-bottom:8px;
+  }
+
+  /* ---------- verification modal ---------- */
+  .verify-overlay{
+    position:fixed; inset:0; background:rgba(74,44,53,.45); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;
+  }
+  .verify-overlay.show{ display:flex; }
+  .verify-box{
+    background: var(--soc-panel); border:1px solid var(--soc-border); border-radius:16px;
+    max-width:560px; width:100%; max-height:88vh; overflow-y:auto; color: var(--soc-text);
+  }
+  .verify-header{ display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid var(--soc-border); }
+  .verify-header h4{ margin:0; font-size:1.15rem; font-weight:700; }
+  .verify-close{ background:none; border:none; font-size:1.6rem; color: var(--soc-muted); cursor:pointer; line-height:1; }
+  .verify-body{ padding:20px 22px; }
+  .verify-body .intro{ color: var(--soc-muted); font-size:.9rem; }
+  .ai-summary-box{ display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; background: var(--soc-panel-alt); border-radius:10px; padding:14px; margin-top:10px; }
+  .ai-summary-box .label{ display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color: var(--soc-muted); }
+  .ai-summary-box .value{ font-weight:600; }
+  .critical-list{ max-height:200px; overflow-y:auto; margin-top:10px; }
+  .critical-item{ border-left:3px solid var(--soc-critical); background: rgba(194,24,91,.08); padding:10px 12px; border-radius:6px; margin-bottom:8px; }
+  .critical-item .who{ font-weight:600; }
+  .critical-item .meta{ color: var(--soc-muted); font-size:.8rem; }
+  .critical-item .rec{ color: var(--soc-critical); font-size:.8rem; margin-top:2px; }
+  .verify-box .form-label{ color: var(--soc-muted); font-size:.82rem; }
+  .verify-box .form-control{ background: var(--soc-panel-alt); border:1px solid var(--soc-border); color: var(--soc-text); }
+  .verify-box .form-control:focus{ background: var(--soc-panel-alt); color: var(--soc-text); border-color: var(--soc-accent); box-shadow:none; }
+  .verify-box .form-check-label{ font-size:.85rem; color: var(--soc-muted); }
+  .verify-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+
+  @media (max-width: 900px){
+    .stat-strip{ grid-template-columns: repeat(2,1fr); }
+    .ai-summary-box{ grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="container-fluid soc-wrap">
+
+  <!-- signature block used by JS to know what's currently flagged -->
+  <!-- alert_signature and already_verified now come from app.py / SQLite, -->
+  <!-- so a sign-off survives page refreshes, new logins, and server restarts -->
+  <div id="alertSignature" class="d-none"
+       data-critical="{{ critical_count }}"
+       data-high="{{ high_count }}"
+       data-signature="{{ alert_signature }}"
+       data-verified="{{ 'true' if already_verified else 'false' }}">
+  </div>
+
+  <!-- ===================================== -->
+  <!-- HEADER -->
+  <!-- ===================================== -->
+  <div class="soc-header">
+    <div>
+      <div class="eyebrow">Department of Basic Education</div>
+      <h1><i class="fa-solid fa-shield-halved"></i> Security Operations Centre</h1>
+      <p>SIZOKUTHOLA is watching account activity across every province and flags anything that looks like an insider risk, in real time.</p>
+      <div class="status-pill"><span class="dot"></span> System online · {{ live_count }} live event(s) this session</div>
+    </div>
+    <div class="clock-card">
+      <div class="label">Current time</div>
+      <div class="time soc-mono" id="liveClock">--</div>
+      <button id="muteButton" class="btn-chime">🔔 Notification chime: On</button>
+    </div>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- SIREN BANNER (stays until verified) -->
+  <!-- ===================================== -->
+  <div id="liveAlert" class="siren-banner d-none">
+    <div class="siren-left">
+      <div class="siren-ring"></div>
+      <div>
+        <h5 id="liveAlertHeadline">Insider threat detected</h5>
+        <p id="liveAlertBody">SIZOKUTHOLA has flagged {{ critical_count }} Critical and {{ high_count }} High account(s) that need a human look before this alarm can go quiet.</p>
+      </div>
+    </div>
+    <button class="btn-review" id="reviewFromBanner" type="button">
+      <i class="fa-solid fa-magnifying-glass"></i> Review &amp; verify
+    </button>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- STAT STRIP -->
+  <!-- ===================================== -->
+  <div class="stat-strip">
+    <div class="stat-card critical">
+      <div class="n soc-mono">{{ critical_count }}</div>
+      <div class="l">Critical · needs action now</div>
+    </div>
+    <div class="stat-card high">
+      <div class="n soc-mono">{{ high_count }}</div>
+      <div class="l">High · worth investigating</div>
+    </div>
+    <div class="stat-card medium">
+      <div class="n soc-mono">{{ medium_count }}</div>
+      <div class="l">Medium · keep an eye on it</div>
+    </div>
+    <div class="stat-card low">
+      <div class="n soc-mono">{{ low_count }}</div>
+      <div class="l">Low · nothing to do</div>
+    </div>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- AI ANALYST + SYSTEM STATUS (main space) -->
+  <!-- ===================================== -->
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="panel">
+        <div class="panel-head">
+          <h5>🤖 SIZOKUTHOLA, your AI analyst</h5>
+          <button class="btn-chime" id="reviewFromPanel" type="button">Review findings</button>
+        </div>
+        <div class="ai-level-box">
+          <div class="label" style="color:var(--soc-muted); font-size:.78rem; text-transform:uppercase;">Current threat level</div>
+          <div class="lvl">{{ ai_level }}</div>
+        </div>
+        <div class="risk-row">
+          <div class="risk-box">
+            <div class="label">Highest-risk province</div>
+            <div class="value">{{ highest_province }}</div>
+          </div>
+          <div class="risk-box">
+            <div class="label">Highest-risk department</div>
+            <div class="value">{{ highest_department }}</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <div class="label" style="color:var(--soc-muted); font-size:.75rem; text-transform:uppercase;">How confident is the model</div>
+          <div class="confidence-track"><div class="confidence-fill" style="width:98%;"></div></div>
+          <div style="text-align:right; font-size:.8rem; color:var(--soc-muted); margin-top:4px;">98%</div>
+        </div>
+        <div>
+          <div class="label" style="color:var(--soc-muted); font-size:.75rem; text-transform:uppercase; margin-top:6px;">What it suggests you do next</div>
+          <ul class="action-list">
+            <li><i class="fa-solid fa-ban" style="color:var(--soc-critical);"></i> Suspend the accounts flagged critical</li>
+            <li><i class="fa-solid fa-usb" style="color:var(--soc-high);"></i> Restrict USB device use for that team</li>
+            <li><i class="fa-solid fa-user-shield" style="color:var(--soc-medium);"></i> Double-check administrator accounts</li>
+            <li><i class="fa-solid fa-moon" style="color:var(--soc-accent);"></i> Watch after-hours activity more closely</li>
+            <li><i class="fa-solid fa-envelope" style="color:var(--soc-low);"></i> Loop in the DBE security team</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="panel">
+        <div class="panel-head">
+          <h5>System status</h5>
+          <span class="badge-on">All systems normal</span>
+        </div>
+        <table class="status-table">
+          <tr><td>AI engine</td><td><span class="badge-on">Online</span></td></tr>
+          <tr><td>Threat detection</td><td><span class="badge-on">Active</span></td></tr>
+          <tr><td>Isolation Forest model</td><td><span class="badge-run">Running</span></td></tr>
+          <tr><td>K-Means clustering</td><td><span class="badge-run">Running</span></td></tr>
+          <tr><td>Data last synced</td><td class="soc-mono">{{ current_time }}</td></tr>
+        </table>
+
+        <div class="verify-log">
+          <div class="label" style="color:var(--soc-muted); font-size:.75rem; text-transform:uppercase; margin-bottom:8px;">Verification log</div>
+          <div id="verificationLog">
+            {% for v in recent_verifications %}
+            <div class="verification-entry">
+              <strong>{{ v.analyst_name }}</strong> (Badge {{ v.badge }}) signed off on
+              {{ v.critical_count }} critical incident(s) at {{ v.verified_at }}{% if v.notes %}. Note: {{ v.notes }}{% endif %}
+            </div>
+            {% else %}
+            <div id="noVerificationsYet" class="verification-entry" style="color:var(--soc-muted);">No critical alerts have needed sign-off yet.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- TRACK INCIDENTS TOGGLE -->
+  <!-- ===================================== -->
+  <div class="track-bar">
+    <h5 style="margin:0;">
+      Incident log
+      <span style="color:var(--soc-muted); font-weight:400; font-size:.82rem;">
+        (showing {{ alerts|length }} of {{ total_alert_count }})
+      </span>
+    </h5>
+    <button class="btn-track" id="trackButton" type="button">
+      <i class="fa-solid fa-list-check"></i> Track incidents
+    </button>
+  </div>
+
+  <div class="incidents-panel d-none" id="incidentsTableWrap">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th></th>
+            <th>User ID</th>
+            <th>Role</th>
+            <th>Province</th>
+            <th>Action</th>
+            <th>Behaviour score</th>
+            <th>Threat</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in alerts %}
+          <tr>
+            <td>
+              {% if row.source == "Live" %}
+              <span class="badge" style="background:rgba(212,132,155,.18); color:var(--soc-accent); border:1px solid rgba(212,132,155,.4);">
+                <i class="fa-solid fa-satellite-dish"></i> LIVE
+              </span>
+              {% endif %}
+            </td>
+            <td><a href="{{ url_for('employee_detail', user_id=row.user_id) }}" style="color:var(--soc-text);"><strong>{{ row.user_id }}</strong></a></td>
+            <td>{{ row.role }}</td>
+            <td>{{ row.province }}</td>
+            <td>{{ row.action }}</td>
+            <td class="soc-mono">{{ row.behaviour_score }}</td>
+            <td>
+              {% if row.threat_level == "Critical" %}
+                <span class="badge bg-danger">🔴 Critical</span>
+              {% elif row.threat_level == "High" %}
+                <span class="badge bg-warning text-dark">🟠 High</span>
+              {% elif row.threat_level == "Medium" %}
+                <span class="badge bg-info">🟡 Medium</span>
+              {% else %}
+                <span class="badge bg-success">🟢 Low</span>
+              {% endif %}
+            </td>
+            <td>{{ row.recommendation }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- EVIDENCE: UNAUTHORISED SUBJECT ACCESS -->
+  <!-- ===================================== -->
+  <div class="track-bar">
+    <h5 style="margin:0;">
+      <i class="fa-solid fa-magnifying-glass-chart"></i>
+      Evidence: subject access outside permission
+    </h5>
+    <span class="badge bg-danger">{{ evidence_log|length }} record(s)</span>
+  </div>
+
+  <div class="incidents-panel">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>When</th>
+            <th>Action</th>
+            <th>File</th>
+            <th>Accessed</th>
+            <th>Permitted</th>
+            <th>Threat</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in evidence_log %}
+          <tr>
+            <td>
+              <a href="{{ url_for('employee_detail', user_id=row.user_id) }}" style="color:var(--soc-text);"><strong>{{ row.user_id }}</strong></a>
+              {% if row.source == "Live" %}
+              <span class="badge" style="background:rgba(212,132,155,.18); color:var(--soc-accent); border:1px solid rgba(212,132,155,.4); margin-left:4px;">LIVE</span>
+              {% endif %}
+            </td>
+            <td class="soc-mono" style="font-size:.82rem;">{{ row.timestamp[:16].replace('T',' ') }}</td>
+            <td>{{ row.action }}</td>
+            <td>{{ row.filename or '—' }}</td>
+            <td><span class="evidence-mismatch">{{ row.accessed_subject }}</span></td>
+            <td class="text-muted">{{ row.subject_permission }}</td>
+            <td>
+              {% if row.threat_level == "Critical" %}
+                <span class="badge bg-danger">🔴 Critical</span>
+              {% elif row.threat_level == "High" %}
+                <span class="badge bg-warning text-dark">🟠 High</span>
+              {% elif row.threat_level == "Medium" %}
+                <span class="badge bg-info">🟡 Medium</span>
+              {% else %}
+                <span class="badge bg-success">🟢 Low</span>
+              {% endif %}
+            </td>
+            <td>{{ row.recommendation }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-4" style="color:var(--soc-muted);">
+              No employee has accessed a subject outside their permission yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================== -->
+<!-- VERIFICATION MODAL -->
+<!-- ===================================== -->
+<div id="verifyModal" class="verify-overlay">
+  <div class="verify-box">
+    <div class="verify-header">
+      <h4><i class="fa-solid fa-user-shield"></i> Review before you silence this alert</h4>
+      <button type="button" class="verify-close" onclick="closeVerification()">&times;</button>
+    </div>
+    <div class="verify-body">
+      <p class="intro">SIZOKUTHOLA flagged {{ critical_count }} critical incident(s). Have a look at what it found, then sign off below — that's what stops the alarm.</p>
+
+      <div class="ai-summary-box">
+        <div><span class="label">Threat level</span><span class="value" style="color:var(--soc-critical);">{{ ai_level }}</span></div>
+        <div><span class="label">Highest-risk province</span><span class="value">{{ highest_province }}</span></div>
+        <div><span class="label">Highest-risk department</span><span class="value">{{ highest_department }}</span></div>
+        <div><span class="label">AI confidence</span><span class="value">98%</span></div>
+      </div>
+
+      <div class="label" style="color:var(--soc-muted); font-size:.75rem; text-transform:uppercase; margin-top:16px;">
+        Flagged incidents
+        {% if critical_count > 25 %}<span style="text-transform:none; font-weight:400;">(showing 25 of {{ critical_count }} — sorted by severity)</span>{% endif %}
+      </div>
+      <div class="critical-list">
+        {% set ns = namespace(shown=0) %}
+        {% for row in alerts %}
+        {% if row.threat_level == "Critical" and ns.shown < 25 %}
+        {% set ns.shown = ns.shown + 1 %}
+        <div class="critical-item">
+          <div class="who">
+            {% if row.source == "Live" %}<span style="color:var(--soc-accent);">● LIVE</span>{% endif %}
+            {{ row.user_id }} — {{ row.role }}, {{ row.province }}
+          </div>
+          <div class="meta">{{ row.action }} · Behaviour score {{ row.behaviour_score }}</div>
+          <div class="rec">Recommended: {{ row.recommendation }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <form id="verifyForm" class="mt-3">
+        <div class="mb-2">
+          <label class="form-label">Your name</label>
+          <input type="text" id="analystName" class="form-control" placeholder="e.g. Thandiwe Mokoena" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Badge / employee number</label>
+          <input type="text" id="analystBadge" class="form-control" placeholder="e.g. DBE-4471" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Your login username (confirms you're a registered Security Analyst)</label>
+          <input type="text" id="analystUsername" class="form-control" value="{{ user }}" placeholder="Type your username to confirm" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Notes (optional)</label>
+          <textarea id="analystNotes" class="form-control" rows="2" placeholder="What did you find? Any action taken?"></textarea>
+        </div>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="ackCheck">
+          <label class="form-check-label" for="ackCheck">
+            I've reviewed the incidents above and take responsibility for this assessment.
+          </label>
+        </div>
+        <div id="verifyError" class="alert alert-danger mt-2 d-none">
+          Please add your name, badge number, username, and tick the checkbox before continuing.
+        </div>
+        <div class="verify-actions">
+          <button type="button" class="btn btn-outline-secondary" onclick="closeVerification()">Not yet</button>
+          <button type="submit" class="btn" style="background:var(--soc-critical); color:#fff; font-weight:600;">
+            Confirm &amp; silence alert
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================== -->
+<!-- JAVASCRIPT -->
+<!-- ===================================== -->
+<script>
+(function () {
+
+  // ---------- read what the server rendered ----------
+  const sigEl = document.getElementById('alertSignature');
+  const criticalCount = Number(sigEl.dataset.critical || 0);
+  const highCount = Number(sigEl.dataset.high || 0);
+  const currentSignature = sigEl.dataset.signature;
+
+  // The database is the source of truth for whether this exact batch
+  // of critical alerts has already been signed off. This is what makes
+  // the siren stay silenced across refreshes and new logins.
+  let alreadyVerified = sigEl.dataset.verified === 'true';
+
+  let soundPref = true;
+  let sirenCtx = null, sirenOsc = null, sirenGain = null, sirenInterval = null, sirenPlaying = false;
+
+  // ---------- siren: loud, sweeping, and only stoppable via verification ----------
+  function startSiren() {
+    if (sirenPlaying) return;
+    sirenPlaying = true;
+    sirenCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sirenOsc = sirenCtx.createOscillator();
+    sirenGain = sirenCtx.createGain();
+    sirenOsc.type = 'sawtooth';
+    sirenGain.gain.value = 0.25;
+    sirenOsc.connect(sirenGain);
+    sirenGain.connect(sirenCtx.destination);
+    sirenOsc.start();
+
+    let freq = 500;
+    let rising = true;
+    sirenInterval = setInterval(function () {
+      freq += rising ? 35 : -35;
+      if (freq >= 880) rising = false;
+      if (freq <= 500) rising = true;
+      sirenOsc.frequency.setValueAtTime(freq, sirenCtx.currentTime);
+    }, 55);
+  }
+
+  function stopSiren() {
+    if (!sirenPlaying) return;
+    sirenPlaying = false;
+    clearInterval(sirenInterval);
+    try { sirenOsc.stop(); } catch (e) {}
+    try { sirenCtx.close(); } catch (e) {}
+  }
+
+  function playChime(freq, dur) {
+    if (!soundPref) return;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq; osc.type = 'sine'; gain.gain.value = 0.05;
+    osc.start();
+    setTimeout(function () { osc.stop(); ctx.close(); }, dur);
+  }
+
+  // ---------- verification modal ----------
+  window.openVerification = function () {
+    document.getElementById('verifyModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeVerification = function () {
+    document.getElementById('verifyModal').classList.remove('show');
+    document.body.style.overflow = '';
+  };
+
+  document.getElementById('verifyForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('analystName').value.trim();
+    const badge = document.getElementById('analystBadge').value.trim();
+    const usernameEntered = document.getElementById('analystUsername').value.trim();
+    const notes = document.getElementById('analystNotes').value.trim();
+    const ack = document.getElementById('ackCheck').checked;
+    const errorBox = document.getElementById('verifyError');
+    const submitBtn = document.querySelector('#verifyForm button[type="submit"]');
+
+    if (!name || !badge || !usernameEntered || !ack) {
+      errorBox.textContent = "Please add your name, badge number, username, and tick the checkbox before continuing.";
+      errorBox.classList.remove('d-none');
+      return;
+    }
+    errorBox.classList.add('d-none');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    fetch('/alerts/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        signature: currentSignature,
+        name: name,
+        badge: badge,
+        username: usernameEntered,
+        notes: notes,
+        critical_count: criticalCount,
+        high_count: highCount
+      })
+    })
+      .then(function (res) {
+        if (!res.ok) {
+          return res.json().then(function (data) { throw new Error(data.error || 'Save failed'); });
+        }
+        return res.json();
+      })
+      .then(function () {
+        // this is the only thing allowed to stop the siren
+        alreadyVerified = true;
+        stopSiren();
+        document.getElementById('liveAlert').classList.add('d-none');
+
+        const noneYet = document.getElementById('noVerificationsYet');
+        if (noneYet) noneYet.remove();
+
+        const entry = document.createElement('div');
+        entry.className = 'verification-entry';
+        entry.innerHTML = '<strong>' + name + '</strong> (Badge ' + badge + ') signed off on ' +
+          criticalCount + ' critical incident(s) at ' + new Date().toLocaleTimeString() +
+          (notes ? '. Note: ' + notes : '.');
+        document.getElementById('verificationLog').prepend(entry);
+
+        closeVerification();
+      })
+      .catch(function (err) {
+        errorBox.textContent = err.message && err.message !== 'Save failed'
+          ? err.message
+          : "Couldn't save your verification — check your connection and try again.";
+        errorBox.classList.remove('d-none');
+      })
+      .finally(function () {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirm & silence alert';
+      });
+  });
+
+  document.getElementById('reviewFromBanner').addEventListener('click', openVerification);
+  document.getElementById('reviewFromPanel').addEventListener('click', openVerification);
+
+  // ---------- chime preference (does not affect an active critical siren) ----------
+  document.getElementById('muteButton').addEventListener('click', function () {
+    soundPref = !soundPref;
+    this.textContent = soundPref ? '🔔 Notification chime: On' : '🔕 Notification chime: Off';
+    this.classList.toggle('off', !soundPref);
+  });
+
+  // ---------- track incidents toggle ----------
+  const trackBtn = document.getElementById('trackButton');
+  const tableWrap = document.getElementById('incidentsTableWrap');
+  trackBtn.addEventListener('click', function () {
+    const isHidden = tableWrap.classList.contains('d-none');
+    tableWrap.classList.toggle('d-none');
+    trackBtn.innerHTML = isHidden
+      ? '<i class="fa-solid fa-eye-slash"></i> Hide incident log'
+      : '<i class="fa-solid fa-list-check"></i> Track incidents';
+  });
+
+  // ---------- live clock ----------
+  function updateClock() {
+    document.getElementById('liveClock').textContent = new Date().toLocaleString();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ---------- trigger on load ----------
+  // Both High and Critical are treated as "needs a human now" -- the
+  // siren is loud and persistent for either one, not just Critical.
+  // A single soft chime is not enough for something that's supposed to
+  // force a review.
+  if ((criticalCount > 0 || highCount > 0) && !alreadyVerified) {
+
+    const headline = document.getElementById('liveAlertHeadline');
+    if (criticalCount > 0) {
+      headline.textContent = 'Critical insider threat detected';
+    } else {
+      headline.textContent = 'High-risk activity detected';
+    }
+
+    document.getElementById('liveAlert').classList.remove('d-none');
+    startSiren();
+  }
+
+  // ---------- auto-refresh every 30s, but never while the review form is open ----------
+  setInterval(function () {
+    if (!document.getElementById('verifyModal').classList.contains('show')) {
+      location.reload();
+    }
+  }, 30000);
+
+})();
+</script>
+
+{% endblock %}
